@@ -14,10 +14,10 @@ Vagrant.configure("2") do |config|
     # vb.cpus = 2
   end
  end
- config.vm.define "name1.local" do |subconfig|
+ config.vm.define "name2.local" do |subconfig|
   subconfig.vm.box = "bento/ubuntu-18.04"
   subconfig.vm.hostname = "name1.local"
-  subconfig.vm.network :private_network, ip: "192.168.56.60"
+  subconfig.vm.network :private_network, ip: "192.168.56.61"
   id_rsa_pub = File.read("#{Dir.home}/.ssh/id_rsa.pub")
   subconfig.vm.provision "shell", inline: <<-SHELL
     echo \"#id_rsa_pub\" >> /home/vagrant/.ssh/authorized_keys
@@ -29,10 +29,10 @@ Vagrant.configure("2") do |config|
     # vb.cpus = 2
   end
  end
- config.vm.define "name1.local" do |subconfig|
+ config.vm.define "name3.local" do |subconfig|
   subconfig.vm.box = "bento/ubuntu-18.04"
   subconfig.vm.hostname = "name1.local"
-  subconfig.vm.network :private_network, ip: "192.168.56.60"
+  subconfig.vm.network :private_network, ip: "192.168.56.62"
   id_rsa_pub = File.read("#{Dir.home}/.ssh/id_rsa.pub")
   subconfig.vm.provision "shell", inline: <<-SHELL
     echo \"#id_rsa_pub\" >> /home/vagrant/.ssh/authorized_keys
