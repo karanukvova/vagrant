@@ -56,7 +56,7 @@ Vagrant.configure("2") do |config|
   apt-get install -y ntp
   echo 'certname = 'puppetagent1'' >> /etc/puppetlabs/puppet/puppet.conf
   echo 'server = puppetserver' >> /etc/puppetlabs/puppet/puppet.conf
-  echo 'runinterval=200' >> /etc/puppetlabs/puppet/puppet.conf
+  echo 'runinterval=100' >> /etc/puppetlabs/puppet/puppet.conf
   systemctl start puppet
   SHELL
   subconfig.vm.provision "file", source: "/home/vova/.ssh/id_rsa.pub", destination: "~/.ssh/authorized_keys"
@@ -77,7 +77,7 @@ Vagrant.configure("2") do |config|
    end
   subconfig.vm.provision "shell", inline: <<-SHELL
   echo '192.168.56.60 puppetserver' >> /etc/hosts
-  echo '192.168.56.62 puppetagent' >> /etc/hosts
+  echo '192.168.56.62 puppetagent2' >> /etc/hosts
   apt-get update -y
   apt-get install -y curl
   apt-get update -y
@@ -88,7 +88,7 @@ Vagrant.configure("2") do |config|
   apt-get install -y ntp
   echo 'certname = 'puppetagent2'' >> /etc/puppetlabs/puppet/puppet.conf
   echo 'server = puppetserver' >> /etc/puppetlabs/puppet/puppet.conf
-  echo 'runinterval=200' >> /etc/puppetlabs/puppet/puppet.conf
+  echo 'runinterval=100' >> /etc/puppetlabs/puppet/puppet.conf
   systemctl start puppet
   SHELL
   subconfig.vm.provision "file", source: "/home/vova/.ssh/id_rsa.pub", destination: "~/.ssh/authorized_keys"
@@ -122,10 +122,14 @@ Vagrant.configure("2") do |config|
    sed -i 's/.*JAVA_ARGS.*/JAVA_ARGS="-Xms512m -Xmx512m"/' /etc/default/puppetserver
    echo '[agent]' >>/etc/puppetlabs/puppet/puppet.conf
    systemctl start puppetserver
+   sleep 60
    /opt/puppetlabs/bin/puppet cert list
-   /opt/puppetlabs/bin/puppet cert sign --all  
-   SHELL
+   /opt/puppetlabs/bin/puppet cert sign --all
+   puppet module install puppetlabs-apt -v 4.2.0 --force --verbose --debug
+  SHELL
+   subconfig.vm.provision "file", source: "/home/vova/vagrant/protocol.pp", destination: "~/manifests/protocol.pp"
    subconfig.vm.provision "file", source: "/home/vova/.ssh/id_rsa.pub", destination: "~/.ssh/authorized_keys"
    end 
 
 end
+
