@@ -99,7 +99,7 @@ Vagrant.configure("2") do |config|
   subconfig.vm.hostname = "name1.local"
   subconfig.vm.network :private_network, ip: "192.168.56.60"
   id_rsa_pub = File.read("#{Dir.home}/.ssh/id_rsa.pub")
-  subconfig.vm.provision "shell", inline: <<-SHELL
+   subconfig.vm.provision "shell", inline: <<-SHELL
     echo \"#id_rsa_pub\" >> /home/vagrant/.ssh/authorized_keys
    SHELL
   config.vm.provider :virtualbox do |vb|
@@ -122,13 +122,15 @@ Vagrant.configure("2") do |config|
    sed -i 's/.*JAVA_ARGS.*/JAVA_ARGS="-Xms512m -Xmx512m"/' /etc/default/puppetserver
    echo '[agent]' >>/etc/puppetlabs/puppet/puppet.conf
    systemctl start puppetserver
-   sleep 60
+   sleep 120
    /opt/puppetlabs/bin/puppet cert list
    /opt/puppetlabs/bin/puppet cert sign --all
-   puppet module install puppetlabs-apt -v 4.2.0 --force --verbose --debug
+   /opt/puppetlabs/bin/puppet module install puppetlabs-apt
   SHELL
-   subconfig.vm.provision "file", source: "/home/vova/vagrant/protocol.pp", destination: "~/manifests/protocol.pp"
    subconfig.vm.provision "file", source: "/home/vova/.ssh/id_rsa.pub", destination: "~/.ssh/authorized_keys"
+   subconfig.vm.provision "file", source: "/home/vova/vagrant/protocol.pp", destination: "/tmp/protocol.pp"
+   subconfig.vm.provision "shell",
+   inline: "mv /tmp/protocol.pp /etc/puppetlabs/code/environments/production/manifests/protocol.pp"
    end 
 
 end
