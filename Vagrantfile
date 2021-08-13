@@ -56,8 +56,8 @@ Vagrant.configure("2") do |config|
   echo 'runinterval=100' >> /etc/puppetlabs/puppet/puppet.conf
   systemctl start puppet
   SHELL
-  subconfig.vm.provision "file", source: "/home/karanukvova/vagrant/id_rsa.pub", destination: "/home/vagrant/.ssh/authorized_keys"
-  subconfig.vm.provision "file", source: "/home/karanukvova/vagrant/master", destination: "/tmp/master"
+  subconfig.vm.provision "file", source: "/home/vova/vagrant/id_rsa.pub", destination: "/home/vagrant/.ssh/authorized_keys"
+  subconfig.vm.provision "file", source: "/home/vova/vagrant/master", destination: "/tmp/master"
  end
  config.vm.define "name3.local" do |subconfig|
   subconfig.vm.box = "bento/ubuntu-18.04"
@@ -71,7 +71,9 @@ Vagrant.configure("2") do |config|
    end
   subconfig.vm.provision "shell", inline: <<-SHELL
   echo '192.168.56.60 name1.local' >> /etc/hosts
+  echo '192.168.56.61 name2.local' >> /etc/hosts
   echo '192.168.56.62 name3.local' >> /etc/hosts
+  echo '192.168.56.63 name4.local' >> /etc/hosts
   sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 4528B6CD9E61EF26
   apt-get update -y
   apt-get install -y curl
@@ -86,9 +88,43 @@ Vagrant.configure("2") do |config|
   echo 'runinterval=100' >> /etc/puppetlabs/puppet/puppet.conf
   systemctl start puppet
   SHELL
-  subconfig.vm.provision "file", source: "/home/karanukvova/vagrant/id_rsa.pub", destination: "/home/vagrant/.ssh/authorized_keys"
-  subconfig.vm.provision "file", source: "/home/karanukvova/vagrant/master", destination: "/tmp/master"
+  subconfig.vm.provision "file", source: "/home/vova/vagrant/id_rsa.pub", destination: "/home/vagrant/.ssh/authorized_keys"
+  subconfig.vm.provision "file", source: "/home/vova/vagrant/master", destination: "/tmp/master"
  end
+
+
+config.vm.define "name4.local" do |subconfig|
+  subconfig.vm.box = "bento/ubuntu-18.04"
+  subconfig.vm.hostname = "name4.local"
+  subconfig.vm.network "private_network", ip: "192.168.56.63"
+  config.vm.provider :virtualbox do |vb|
+    vb.customize ["modifyvm", :id, "--cableconnected0", "on"]
+    vb.memory = "1500"
+    vb.gui = true
+    # vb.cpus = 2
+   end
+  subconfig.vm.provision "shell", inline: <<-SHELL
+  echo '192.168.56.60 name1.local' >> /etc/hosts
+  echo '192.168.56.61 name2.local' >> /etc/hosts
+  echo '192.168.56.62 name3.local' >> /etc/hosts
+  echo '192.168.56.63 name4.local' >> /etc/hosts
+  sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 4528B6CD9E61EF26
+  apt-get update -y
+  apt-get install -y curl
+  curl -O https://apt.puppetlabs.com/puppetlabs-release-pc1-xenial.deb
+  dpkg -i puppetlabs-release-pc1-xenial.deb
+  apt-get update -y
+  apt-get install -y puppet-agent
+#  apt-get install -y ntp
+  echo 'certname = 'name2.local'' >> /etc/puppetlabs/puppet/puppet.conf
+  echo 'server = name1.local' >> /etc/puppetlabs/puppet/puppet.conf
+  echo 'runinterval=100' >> /etc/puppetlabs/puppet/puppet.conf
+  systemctl start puppet
+  SHELL
+  subconfig.vm.provision "file", source: "/home/vova/vagrant/id_rsa.pub", destination: "/home/vagrant/.ssh/authorized_keys"
+  subconfig.vm.provision "file", source: "/home/vova/vagrant/master", destination: "/tmp/master"
+ end
+
 
  config.vm.define "name1.local" do |subconfig|
   subconfig.vm.box = "bento/ubuntu-18.04"
@@ -104,6 +140,7 @@ Vagrant.configure("2") do |config|
    echo '192.168.56.60 name1.local' >> /etc/hosts
    echo '192.168.56.61 name2.local' >> /etc/hosts
    echo '192.168.56.62 name3.local' >> /etc/hosts
+   echo '192.168.56.63 name4.local' >> /etc/hosts
    sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 4528B6CD9E61EF26
    apt-get update -y
    apt-get install -y curl
@@ -124,9 +161,11 @@ Vagrant.configure("2") do |config|
    /opt/puppetlabs/bin/puppet cert sign --all
    /opt/puppetlabs/bin/puppet module install puppetlabs-stdlib --version 4.21.0
    /opt/puppetlabs/bin/puppet module install puppetlabs-apt -v 4.2.0
+   /opt/puppetlabs/bin/puppet module install puppet/jenkins --version 2.0.0 --force
+   /opt/puppetlabs/bin/puppet module install rtyler/jenkins --force
   SHELL
-   subconfig.vm.provision "file", source: "/home/karanukvova/vagrant/id_rsa.pub", destination: "/home/vagrant/.ssh/authorized_keys"
-   subconfig.vm.provision "file", source: "/home/karanukvova/vagrant/master", destination: "/tmp/master"
+   subconfig.vm.provision "file", source: "/home/vova/vagrant/id_rsa.pub", destination: "/home/vagrant/.ssh/authorized_keys"
+   subconfig.vm.provision "file", source: "/home/vova/vagrant/master", destination: "/tmp/master"
    subconfig.vm.provision "shell",
    inline: "mv /tmp/master/name2.pp /etc/puppetlabs/code/environments/production/manifests/name2.pp"
    subconfig.vm.provision "shell",
@@ -134,10 +173,11 @@ Vagrant.configure("2") do |config|
    subconfig.vm.provision "shell",
    inline: "mv /tmp/master/name1.pp /etc/puppetlabs/code/environments/production/manifests/name1.pp"
    subconfig.vm.provision "shell", inline: <<-SHELL
+   inline: "mv /tmp/master/name4.pp /etc/puppetlabs/code/environments/production/manifests/name4.pp"
+   subconfig.vm.provision "shell",
    /opt/puppetlabs/bin/puppet agent --test
       SHELL
 
    end 
 
 end
-
